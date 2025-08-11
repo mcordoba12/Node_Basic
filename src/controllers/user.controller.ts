@@ -1,7 +1,7 @@
 import e from 'express';
 import express, { Request, Response} from 'express';
 import { UserDocument } from './../models/user.model';
-import { UserInput } from './../interfaces/user.interface';
+import { UserInput, UserInputUpdate } from './../interfaces/user.interface';
 import { userService } from '../services/user.services';
 
 
@@ -21,23 +21,63 @@ class UserController {
 
     }
 
-    public getAll(req: Request, res: Response) {
-        res.send('Get all users');
+    public async getAll(req: Request, res: Response) {
+        try {
+            const users: UserDocument[] | null = await userService.getAll();
+            res.json(users)
+        } catch (error) {
+            res.status(500).json(error);
+        }
     }
 
-    public getById(req: Request, res: Response) {
-        const userId = req.params.id;
-        res.send(`Get user with ID: ${userId}`);
+    
+
+    public async getById(req: Request, res: Response) {
+        try {
+            const id : string = req.params.id || "";
+            const user : UserDocument | null = await userService.getByID(id);
+
+            if (user == null) {
+            res.status(404).json({message: `User with id ${id} is not found`});
+            return;
+        }
+        res.json(user);
+
+        } catch (error) {
+            res.status(500).json(error);
+
+        }
+
     }
 
-    public update(req: Request, res: Response) {
-        const userId = req.params.id;
-        res.send(`Update user with ID: ${userId}`);
+    public async update(req: Request, res: Response) {
+       try {
+        const id : string = req.params.id || "";
+        const user : UserDocument | null = await userService.update(id, req.body as UserInputUpdate);
+        
+        if (user == null) {
+            res.status(404).json({message: `User with id ${id} is not found`});
+            return;
+        }
+        res.json(user);
+       } catch (error) {
+            res.status(500).json(error);
+       }
     }
 
-    public delete(req: Request, res: Response) {
-        const userId = req.params.id;
-        res.send(`Delete user with ID: ${userId}`);
+    public async delete(req: Request, res: Response) {
+    try {
+            const id : string = req.params.id || "";
+            const user : UserDocument | null = await userService.delete(id);
+            
+            if (user == null) {
+                res.status(404).json({message: `User with id ${id} is not found`});
+                return;
+            }
+            res.json(user);
+        } catch (error) {
+                res.status(500).json(error);
+        }
     }
 
 
