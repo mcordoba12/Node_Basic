@@ -1,6 +1,7 @@
 import express, {Express , Request, Response} from 'express';
 
 import { userRouter} from './routes/index';
+import {db} from './config/conexionDb';
 
 const app: Express = express(); // Crear una instancia de Express
 
@@ -28,5 +29,12 @@ app.get('/api', (req: Request, res: Response) => { // Cuando llegue un /api diga
 app.listen(port, () => {
   console.log(`Server is runnig on port 3000 ${port}`); // Registro cuando se inicia el servidor
 }); // Inicie el servidor en el puerto 3000
+
+
+db.then(() =>
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`); // Registro cuando se inicia el servidor
+  })  
+)
 
 export default app; // Exportar la instancia de la aplicación para pruebas o usos posteriores
