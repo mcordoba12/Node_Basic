@@ -1,12 +1,24 @@
 import e from 'express';
 import express, { Request, Response} from 'express';
+import { UserDocument } from './../models/user.model';
+import { UserInput } from './../interfaces/user.interface';
+import { userService } from '../services/user.services';
 
 
 class UserController {
-    public create(req: Request, res: Response) {
-        const newUser = req.body;
-        let user = `email: ${newUser.email}, password: ${newUser.password}`;
-        res.send(`Create a new user with data: ${user}`);
+    public async create(req: Request, res: Response) {
+        try{
+        const newUser : UserDocument = await userService.create(req.body as UserInput);
+         res.status(201).json(newUser);
+
+        }catch (error) {
+            if (error instanceof ReferenceError) {
+                res.status(400).json({ message: "User already exits" });
+                return;
+            }
+            res.status(500).json(error);
+        }
+
     }
 
     public getAll(req: Request, res: Response) {
