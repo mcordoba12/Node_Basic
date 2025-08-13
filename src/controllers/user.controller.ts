@@ -3,6 +3,7 @@ import express, { Request, Response} from 'express';
 import { UserDocument } from './../models/user.model';
 import { UserInput, UserInputUpdate } from './../interfaces/user.interface';
 import { userService } from '../services/user.services';
+import { UserLogin } from './../interfaces/user.interface';
 
 
 class UserController {
@@ -74,10 +75,26 @@ class UserController {
                 res.status(404).json({message: `User with id ${id} is not found`});
                 return;
             }
-            res.json(user);
+            res.json({user, message: "User Delete successful"});
         } catch (error) {
                 res.status(500).json(error);
         }
+    }
+
+        public async login(req: Request, res: Response) {
+        try {
+            const user : UserDocument | undefined = await userService.login(req.body as UserLogin);
+            res.json(user);
+
+        } catch (error) {
+                if (error instanceof ReferenceError) {
+                res.status(401).json({ message: "Not Authorized" });
+                return;
+            }
+            res.status(500).json(error);
+
+        }
+
     }
 
 

@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt"; 
 import { UserDocument, UserModel } from "../models";
 import { UserInput,  UserInputUpdate} from "../interfaces";
+import { UserLogin } from './../interfaces/user.interface';
 
 
 class UserService{
@@ -54,6 +55,18 @@ class UserService{
 
         }
     }
+
+    public async login(userLogin : UserLogin): Promise<UserDocument | undefined>{
+        const userExits : UserDocument | null = await this.findByEmail(userLogin.email);
+        if (userExits == null) {
+            throw new ReferenceError("Not Authorizad");
+            
+        }
+
+        return userExits;
+    }
+
+
 }
 
 export const userService = new UserService();
