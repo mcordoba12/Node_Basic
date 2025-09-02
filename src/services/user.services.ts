@@ -17,15 +17,23 @@ class UserService{
             //const secret : string =  process.env.SECRET || "";
             userInput.password = await bcrypt.hash(userInput.password, 10);
         }
+
+        console.log(userExits);
         
         return UserModel.create(userInput);
     }
 
 
-    public findByEmail(email: string, password: boolean = false): Promise<UserDocument | null> {
-        
-        return UserModel.findOne({ email }, {password});
+    public findByEmail(email: string, withPassword = false): Promise<UserDocument | null> {
+    const q = UserModel.findOne({ email });
+
+    // Siempre trae los campos que necesitas para el token
+    if (withPassword) {
+        return q.select('+password name email role').exec(); 
     }
+    return q.select('name email role').exec();
+    }
+
 
 
     public async update(id: string, userInput: UserInputUpdate): Promise <UserDocument | null>{
@@ -68,25 +76,37 @@ class UserService{
             throw new ReferenceError("Invalid data")
         }
 
+        
         return {
+            user: { 
             id : userExits.id,
-            roles:["admin"],
-            token: this.generateToken(userExits.id)
-
+            email : userExits.email,
+            name : userExits.name,
+            role: userExits.role,
+            } , 
+            token: await this.generateToken(userExits)
         };
     }
 
-    public async generateToken(id: string): Promise<string>{
-        const user = await this.getByID(id);
+    public async generateToken(user: UserDocument): Promise<string>{
 
         if (user == null) {
             throw new Error();
             
         }
 
+        console.log("[generateToken] payload:", {
+  id: user.id, email: user.email, name: user.name, role: user.role
+});
+
         return jwt.sign(
-            user,
-            "secret_key",
+            {user:{
+                id : user.id,
+                email : user.email,
+                name: user.name,
+                role: user.role
+            }} ,
+            process.env.SECRET || "secret_key",
             {expiresIn: "10m"}
         );
     }
